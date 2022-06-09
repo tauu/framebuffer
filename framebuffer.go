@@ -1,4 +1,3 @@
-// +build linux,cgo
 package framebuffer
 
 import (
@@ -7,11 +6,6 @@ import (
 	"syscall"
 	"unsafe"
 )
-
-/*
-#include <linux/fb.h>
-*/
-import "C"
 
 // Device is a framebuffer device
 type Device struct {
@@ -29,7 +23,7 @@ func Open(device string) (*Device, error) {
 	fb := Device{
 		file: file,
 	}
-	if err := fb.ioctl(C.FBIOGET_FSCREENINFO, unsafe.Pointer(&fb.FixScreenInfo)); err != nil {
+	if err := fb.ioctl(FBIOGET_FSCREENINFO, unsafe.Pointer(&fb.FixScreenInfo)); err != nil {
 		return nil, fmt.Errorf("ioctl FBIOGET_FSCREENINFO failed: %v", err)
 	}
 	mmap, err := syscall.Mmap(int(file.Fd()), 0, int(fb.FixScreenInfo.SmemLen), syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
@@ -51,7 +45,7 @@ func (fb *Device) Close() error {
 // VarScreenInfo read the framebuffer settings
 func (fb *Device) VarScreenInfo() (*VarScreenInfo, error) {
 	v := VarScreenInfo{}
-	if err := fb.ioctl(C.FBIOGET_VSCREENINFO, unsafe.Pointer(&v)); err != nil {
+	if err := fb.ioctl(FBIOGET_VSCREENINFO, unsafe.Pointer(&v)); err != nil {
 		return nil, fmt.Errorf("ioctl FBIOGET_FSCREENINFO failed: %v", err)
 	}
 	return &v, nil
@@ -59,12 +53,12 @@ func (fb *Device) VarScreenInfo() (*VarScreenInfo, error) {
 
 // SetVarScreenInfo change framebuffer settings
 func (fb *Device) SetVarScreenInfo(v *VarScreenInfo) error {
-	return fb.ioctl(C.FBIOPUT_VSCREENINFO, unsafe.Pointer(&v))
+	return fb.ioctl(FBIOPUT_VSCREENINFO, unsafe.Pointer(&v))
 }
 
 // PanDisplay can be used to scroll inside the virtual resolution.
 func (fb *Device) PanDisplay(v *VarScreenInfo) error {
-	return fb.ioctl(C.FBIOPAN_DISPLAY, unsafe.Pointer(&v))
+	return fb.ioctl(FBIOPAN_DISPLAY, unsafe.Pointer(&v))
 }
 
 func (fb *Device) ioctl(cmd uintptr, arg unsafe.Pointer) error {
