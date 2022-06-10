@@ -1,5 +1,5 @@
-//go:build linux && cgo
-// +build linux,cgo
+//go:build ignore
+// +build ignore
 
 package framebuffer
 
